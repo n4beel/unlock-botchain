@@ -9,6 +9,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: AirlockButtonVariant;
   size?: AirlockButtonSize;
   busy?: boolean;
+  loading?: boolean;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(function AirlockButton(
@@ -16,6 +17,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function AirlockButton
     variant = "primary",
     size = "md",
     busy = false,
+    loading = false,
     disabled = false,
     className = "",
     children,
@@ -24,7 +26,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function AirlockButton
   },
   ref
 ) {
-  const isInactive = disabled || busy;
+  const isInactive = disabled || busy || loading;
+  const isSpinnerVisible = busy || loading;
 
   // Custom styling map for Airlock interface
   const variantMap = {
@@ -48,13 +51,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function AirlockButton
       style={style}
       {...props}
     >
-      {busy && (
+      {isSpinnerVisible && (
         <span
           className="inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin"
           aria-hidden="true"
         />
       )}
-      <span className={busy ? "opacity-75" : ""}>{children}</span>
+      <span className={isSpinnerVisible ? "opacity-75" : ""}>{children}</span>
     </button>
   );
 });

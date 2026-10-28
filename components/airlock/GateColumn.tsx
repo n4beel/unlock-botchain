@@ -10,6 +10,13 @@ interface GateColumnProps {
   className?: string;
 }
 
+type GateLamp = {
+  label: string;
+  status: "pending" | "active" | "complete" | "disabled";
+  active: boolean;
+  sublabel?: string;
+};
+
 export default function GateColumn({ state, isLate = false, className = "" }: GateColumnProps) {
   /**
    * 4 Lamps:
@@ -18,9 +25,9 @@ export default function GateColumn({ state, isLate = false, className = "" }: Ga
    * 3. Key revealed (Active when state == 2)
    * 4. Settled (Active when state == 2 (withdrawn), 3 (refunded), or 4 (cancelled))
    */
-  const lamps = useMemo(() => {
+  const lamps = useMemo<GateLamp[]>(() => {
     // Stage 1: Listed
-    const lamp1 = {
+    const lamp1: GateLamp = {
       label: "Listed",
       status: state >= 0 ? "complete" : "pending",
       active: state === 0,
@@ -28,23 +35,25 @@ export default function GateColumn({ state, isLate = false, className = "" }: Ga
 
     // Stage 2: Paid
     const isPaidOrBeyond = state === 1 || state === 2 || state === 3;
-    const lamp2 = {
+    const lamp2Status: GateLamp["status"] = state === 4 ? "disabled" : isPaidOrBeyond ? (state === 1 ? "active" : "complete") : "pending";
+    const lamp2: GateLamp = {
       label: state === 4 ? "Bypassed" : "Paid",
-      status: state === 4 ? "disabled" : isPaidOrBeyond ? (state === 1 ? "active" : "complete") : "pending",
+      status: lamp2Status,
       active: state === 1 && !isLate,
       sublabel: state === 1 && isLate ? "Expired" : undefined,
     };
 
     // Stage 3: Key revealed
-    const lamp3 = {
+    const lamp3Status: GateLamp["status"] = state === 2 ? "active" : state === 3 ? "disabled" : "pending";
+    const lamp3: GateLamp = {
       label: state === 3 ? "Window Closed" : "Key Revealed",
-      status: state === 2 ? "active" : state === 3 ? "disabled" : "pending",
+      status: lamp3Status,
       active: state === 2,
     };
 
     // Stage 4: Settled
     let settledLabel = "Settled";
-    let settledStatus: "pending" | "active" | "complete" | "disabled" = "pending";
+    let settledStatus: GateLamp["status"] = "pending";
     if (state === 2) {
       settledLabel = "Key Released";
       settledStatus = "complete";
@@ -56,7 +65,7 @@ export default function GateColumn({ state, isLate = false, className = "" }: Ga
       settledStatus = "disabled";
     }
 
-    const lamp4 = {
+    const lamp4: GateLamp = {
       label: settledLabel,
       status: settledStatus,
       active: state === 2 || state === 3 || state === 4,
