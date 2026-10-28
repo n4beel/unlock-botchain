@@ -36,8 +36,14 @@ export const DEPLOYMENTS: Record<BotChainId, Deployment> = {
     deployBlock: BigInt(process.env.NEXT_PUBLIC_DEPLOY_BLOCK_677 ?? "0"),
   },
   968: {
-    address: (process.env.NEXT_PUBLIC_CONTRACT_968 as Address) ?? ZERO_ADDRESS,
-    deployBlock: BigInt(process.env.NEXT_PUBLIC_DEPLOY_BLOCK_968 ?? "0"),
+    address:
+      (process.env.NEXT_PUBLIC_CONTRACT_968 as Address) ??
+      (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address) ??
+      ZERO_ADDRESS,
+    deployBlock: BigInt(
+      process.env.NEXT_PUBLIC_DEPLOY_BLOCK_968 ??
+      (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ? "1" : "0")
+    ),
   },
 };
 

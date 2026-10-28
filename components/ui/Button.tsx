@@ -1,55 +1,63 @@
 "use client";
 
-import { ButtonHTMLAttributes, CSSProperties, forwardRef } from "react";
+import { type ButtonHTMLAttributes, forwardRef } from "react";
 
-type Variant = "primary" | "ghost" | "danger";
-type Size = "sm" | "md";
+export type AirlockButtonVariant = "primary" | "outline" | "ghost" | "danger";
+export type AirlockButtonSize = "sm" | "md" | "lg";
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: Variant;
-  size?: Size;
-  loading?: boolean;
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: AirlockButtonVariant;
+  size?: AirlockButtonSize;
+  busy?: boolean;
 }
 
-const variantInlineStyles: Record<Variant, CSSProperties> = {
-  primary: { background: "var(--accent)", color: "var(--bg-base)" },
-  ghost: { background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)" },
-  danger: { background: "transparent", border: "1px solid var(--danger)", color: "var(--danger)" },
-};
-
-const sizeStyles: Record<Size, string> = {
-  sm: "px-3 py-1.5 text-[11px]",
-  md: "px-5 py-2.5 text-[13px]",
-};
-
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = "primary", size = "md", loading, disabled, children, className = "", style, ...props }, ref) => {
-    return (
-      <button
-        ref={ref}
-        disabled={disabled || loading}
-        className={[
-          "inline-flex items-center justify-center gap-2",
-          "font-medium tracking-[0.02em] uppercase transition-opacity",
-          "cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed",
-          sizeStyles[size],
-          className,
-        ].join(" ")}
-        style={{ borderRadius: "2px", ...variantInlineStyles[variant], ...style }}
-        {...props}
-      >
-        {loading ? (
-          <>
-            <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
-            {children}
-          </>
-        ) : (
-          children
-        )}
-      </button>
-    );
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(function AirlockButton(
+  {
+    variant = "primary",
+    size = "md",
+    busy = false,
+    disabled = false,
+    className = "",
+    children,
+    style,
+    ...props
   },
-);
+  ref
+) {
+  const isInactive = disabled || busy;
 
-Button.displayName = "Button";
+  // Custom styling map for Airlock interface
+  const variantMap = {
+    primary: "bg-[var(--accent)] text-[var(--accent-ink)] hover:brightness-105 active:brightness-95 border-transparent",
+    outline: "bg-transparent text-[var(--text-primary)] border-[var(--border-default)] hover:border-[var(--accent)] hover:text-[var(--accent)]",
+    ghost: "bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-subtle)] hover:text-[var(--text-primary)] hover:border-[var(--border-default)]",
+    danger: "bg-transparent text-[var(--danger)] border-[var(--danger)] hover:bg-[color-mix(in_srgb,var(--danger)_12%,transparent)]",
+  };
+
+  const sizeMap = {
+    sm: "px-2.5 py-1 text-[11px] h-[30px]",
+    md: "px-4 py-2 text-[13px] h-[38px]",
+    lg: "px-6 py-3 text-[14px] h-[46px]",
+  };
+
+  return (
+    <button
+      ref={ref}
+      disabled={isInactive}
+      className={`relative inline-flex items-center justify-center gap-2 font-mono font-medium tracking-[0.03em] uppercase transition-all duration-150 select-none border cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${variantMap[variant]} ${sizeMap[size]} ${className}`}
+      style={style}
+      {...props}
+    >
+      {busy && (
+        <span
+          className="inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin"
+          aria-hidden="true"
+        />
+      )}
+      <span className={busy ? "opacity-75" : ""}>{children}</span>
+    </button>
+  );
+});
+
+Button.displayName = "AirlockButton";
 export default Button;
