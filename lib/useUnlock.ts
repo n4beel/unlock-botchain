@@ -18,13 +18,36 @@ export function useUnlock() {
   const [isBusy, setIsBusy] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Live timer tick for deadlines
+  // Live timer tick synced with blockchain block timestamp
   useEffect(() => {
-    const timer = setInterval(() => {
-      setNowSec(BigInt(Math.floor(Date.now() / 1000)));
+    let mounted = true;
+    async function syncTime() {
+      if (publicClient) {
+        try {
+          const blk = await publicClient.getBlock();
+          if (mounted && blk?.timestamp) {
+            setNowSec(blk.timestamp);
+            return;
+          }
+        } catch {
+          // ignore error and fallback
+        }
+      }
+      if (mounted) {
+        setNowSec(BigInt(Math.floor(Date.now() / 1000)));
+      }
+    }
+    syncTime();
+    const tickTimer = setInterval(() => {
+      setNowSec((prev) => prev + 1n);
     }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+    const syncInterval = setInterval(syncTime, 5000);
+    return () => {
+      mounted = false;
+      clearInterval(tickTimer);
+      clearInterval(syncInterval);
+    };
+  }, [publicClient]);
 
   const contractAddress = useMemo<Address>(() => {
     const envAddr = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address | undefined;

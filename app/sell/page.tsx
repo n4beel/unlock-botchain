@@ -231,6 +231,39 @@ export default function SellPage() {
               <div className="text-[11px] font-mono text-[var(--text-tertiary)]">
                 Supports documents, datasets, binaries, archives (up to browser memory limits)
               </div>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  id="sample-file-btn"
+                  onClick={async () => {
+                    const sample = {
+                      name: "ocean-survey-charlie.csv",
+                      data: new TextEncoder().encode("timestamp,depth,temp\n1718000000,450.2,4.2\n"),
+                    };
+                    setChosenFile({ name: sample.name } as File);
+                    setIsEncrypting(true);
+                    setFormError(null);
+                    try {
+                      const enc = await encryptFile(sample);
+                      setEncryptedBlob(enc.blob);
+                      setKeyHex(enc.keyHex);
+                      setKeyHash(enc.keyHash);
+                      setBlobHash(enc.blobHash);
+                      if (!label) setLabel(sample.name.slice(0, MAX_LABEL));
+                      setStep(2);
+                    } catch (err: unknown) {
+                      console.error("Encryption failed in sample-file-btn:", err);
+                      const msg = err instanceof Error ? err.message : "Encryption failed";
+                      setFormError(msg);
+                    } finally {
+                      setIsEncrypting(false);
+                    }
+                  }}
+                  className="text-[11px] font-mono uppercase text-[var(--accent)] hover:underline cursor-pointer"
+                >
+                  Or Load Sample Dataset
+                </button>
+              </div>
             </div>
 
             {isEncrypting && (
