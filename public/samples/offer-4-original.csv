@@ -1,0 +1,5 @@
+sample_id,depth_m,strata_type,porosity,permeability_md
+BH-2026-A1,142.5,Sandstone,0.22,45.8
+BH-2026-A2,189.0,Carbonate,0.14,12.3
+BH-2026-A3,230.4,Shale,0.06,0.2
+BH-2026-A4,312.8,Sandstone,0.28,89.1
