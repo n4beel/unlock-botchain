@@ -133,3 +133,11 @@ honesty: 0 finding(s) in 1 project(s)
 - `f8c545e`: `feat(unlock): implement Archetype W Airlock UI components and tokens (M5)`
 - `9be9355`: `feat(unlock): implement routes, useUnlock hook, and full wire-up (M6)`
 - *(Current)*: `feat(unlock): complete verification, icon, walkthrough, and handover (M7)`
+
+## Feedback round 1 (Part A Remediation)
+- **Network Pinning**: All writes routed through `lib/useChainWrite.ts` pinned to `activeBotChain.id`. `usePublicClient` and `getDeployment` pinned to `activeBotChain.id`. `WrongNetworkBar` mounted in `app/layout.tsx`. Clickable `NetworkBadge` with switch functionality and `describeError` mapping network mismatch to standard message.
+- **Font & Distinctness**: Replaced template fonts with Archetype W Chivo & Chivo Mono fonts. Similarity dropped to <0.64.
+- **Deploy Script**: Wired `contracts/script/Deploy.s.sol` to deploy `Unlock` and print deployed address; tested with code verification on local anvil.
+- **Contract Bug Fix**: In `refund()`, verified state check `o.state != State.Paid` occurs before caller check `msg.sender != o.buyer`, fixing `test_RefundWhenNotPaidReverts`. All 31 unit, fuzz, and invariant tests pass.
+- **Amount Inputs & Constants**: Verified amount input has `step="any"` with proper validation. Protocol limits documented from contract constants in `README.md`.
+- **All Quality Gates**: `check-ui-contract.py`, `check-tokens.py`, `check-honesty.py`, and `check-distinct.py` exit 0. Vitest 59/59 passing, `npx tsc --noEmit` clean.

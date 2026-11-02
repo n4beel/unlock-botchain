@@ -39,7 +39,13 @@ A fair-exchange protocol providing trust-minimized digital goods delivery:
 - **Borders**: Naval Border `#2B3E50`, Subtle `#1F2F3D`, Strong `#3D556E`
 - **Status Colors**: Success `#7BD88F`, Warning `#FFD27A`, Danger `#FFB199`
 - **Wallet Menu**: `--menu-bg #1A2733` · `--menu-fg #E6EEF4` · `--menu-muted #A9BECE` · `--menu-border #4A6076` · `--menu-hover-bg #263848` · `--menu-danger #FFB199`
-- **Typography**: Geist Sans & Geist Mono / Tabular numbers.
+- **Typography**: Chivo & Chivo Mono / Tabular numbers.
+
+### Protocol Limits (from contract constants)
+
+- `MIN_WINDOW = 3600` (1 hour)
+- `MAX_WINDOW = 604800` (7 days)
+- `MAX_LABEL = 64` bytes
 
 ## Signature Components
 

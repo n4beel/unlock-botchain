@@ -1,9 +1,15 @@
 import { formatEther } from "viem";
+import { activeBotChain } from "@/lib/botchain/chain";
 
 /**
  * Decodes contract errors into user-friendly diagnostic messages matching spec §4.
  */
 export function decodeContractError(err: unknown): string {
+  // A wallet on the other BOT Chain network: writes are pinned to this build's chain (lib/useChainWrite.ts), so wagmi
+  // refuses before the wallet opens. Say what to do, not the library's name for it.
+  if (/ConnectorChainMismatch|chain mismatch|does not match the target chain/i.test(err instanceof Error ? `${err.name} ${err.message}` : String(err))) {
+    return `Your wallet is on a different network. Switch it to ${activeBotChain.name}, then try again.`;
+  }
   if (!err) return "An unexpected error occurred.";
 
   const message = err instanceof Error ? err.message : String(err);

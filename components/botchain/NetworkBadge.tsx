@@ -1,6 +1,6 @@
 "use client";
 
-import { useAccount, useChainId } from "wagmi";
+import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import { activeBotChain, botChain, isActiveChain, isBotChainId } from "@/lib/botchain/chain";
 
 /**
@@ -22,6 +22,7 @@ import { activeBotChain, botChain, isActiveChain, isBotChainId } from "@/lib/bot
 export default function NetworkBadge() {
   const chainId = useChainId();
   const { isConnected } = useAccount();
+  const { switchChain, isPending } = useSwitchChain();
 
   const mismatched = isConnected && !isActiveChain(chainId);
   const shown = isConnected && isBotChainId(chainId) ? chainId : activeBotChain.id;
@@ -34,6 +35,23 @@ export default function NetworkBadge() {
     : mainnet
       ? "BOT Chain mainnet (677)"
       : "Bohr testnet (968) — not mainnet";
+
+  if (mismatched) {
+    // Shown on every screen size and clickable: the fix for a wrong network is one tap, not a hunt
+    // through the wallet. The form itself refuses to send until the wallet is on this network.
+    return (
+      <button
+        type="button"
+        onClick={() => switchChain({ chainId: activeBotChain.id })}
+        disabled={isPending}
+        className="inline-flex items-center gap-1.5 px-2 py-1 text-[10px] uppercase tracking-[0.06em] flex-shrink-0 cursor-pointer"
+        style={{ borderRadius: "2px", border: "1px solid var(--warning)", color: "var(--warning)", background: "transparent" }}
+        title={title}
+      >
+        {isPending ? "Switching…" : `Wrong network — switch to ${activeBotChain.name}`}
+      </button>
+    );
+  }
 
   return (
     <span

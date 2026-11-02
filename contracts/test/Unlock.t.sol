@@ -112,6 +112,23 @@ contract UnlockTest is Test {
         unlock.reveal(1, SAMPLE_KEY);
     }
 
+    function test_RevealAtExactDeadlineSucceeds() public {
+        vm.prank(alice);
+        unlock.list(SAMPLE_BLOB_HASH, sampleKeyHash, 1 ether, 3600, "Secret File");
+
+        vm.prank(bob);
+        unlock.buy{value: 1 ether}(1);
+
+        // Warp exactly to deadline (block.timestamp + 3600)
+        vm.warp(block.timestamp + 3600);
+
+        vm.prank(alice);
+        unlock.reveal(1, SAMPLE_KEY);
+
+        Unlock.Offer memory o = unlock.offerOf(1);
+        assertEq(uint8(o.state), uint8(Unlock.State.Revealed));
+    }
+
     function test_RefundOnlyAfterDeadline() public {
         vm.prank(alice);
         unlock.list(SAMPLE_BLOB_HASH, sampleKeyHash, 1 ether, 3600, "Secret File");
@@ -435,6 +452,12 @@ contract UnlockTest is Test {
 
         // Offset 3 count 2 (IDs 2, 1)
         res = unlock.latest(3, 2);
+        assertEq(res.length, 2);
+        assertEq(res[0].price, 2 ether);
+        assertEq(res[1].price, 1 ether);
+
+        // Offset 3 count 10 (remaining is 2, requesting 10)
+        res = unlock.latest(3, 10);
         assertEq(res.length, 2);
         assertEq(res[0].price, 2 ether);
         assertEq(res[1].price, 1 ether);

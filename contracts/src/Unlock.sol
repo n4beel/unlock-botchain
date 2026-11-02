@@ -161,8 +161,8 @@ contract Unlock {
     function refund(uint256 id) external {
         Offer storage o = _offers[id];
         if (o.seller == address(0)) revert NotFound();
-        if (msg.sender != o.buyer) revert NotBuyer();
         if (o.state != State.Paid) revert NotPaid();
+        if (msg.sender != o.buyer) revert NotBuyer();
         if (block.timestamp <= o.deadline) revert NotLate();
 
         o.state = State.Refunded;

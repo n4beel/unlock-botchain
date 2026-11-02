@@ -1,17 +1,18 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useAccount, useChainId, usePublicClient, useWalletClient } from "wagmi";
+import { assertActiveChain, checkedWrite, waitSuccess } from "@/lib/useChainWrite";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { type Address, parseEventLogs } from "viem";
 import { unlockAbi } from "./botchain/abi";
 import { getDeployment, ZERO_ADDRESS } from "./botchain/deployment";
+import { activeBotChain } from "./botchain/chain";
 import { decodeContractError } from "./errors";
 import type { OfferDetails } from "@/components/airlock/OfferChamber";
 
 export function useUnlock() {
   const { address: userAddress, isConnected } = useAccount();
-  const currentChainId = useChainId();
-  const publicClient = usePublicClient(); // stable-hook-result
+  const publicClient = usePublicClient({ chainId: activeBotChain.id }); // stable-hook-result
   const { data: walletClient } = useWalletClient();
 
   const [nowSec, setNowSec] = useState<bigint>(BigInt(Math.floor(Date.now() / 1000)));
@@ -52,9 +53,9 @@ export function useUnlock() {
   const contractAddress = useMemo<Address>(() => {
     const envAddr = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address | undefined;
     if (envAddr && envAddr !== ZERO_ADDRESS) return envAddr;
-    const deployment = getDeployment(currentChainId as 677 | 968);
+    const deployment = getDeployment(activeBotChain.id);
     return deployment?.address ?? ZERO_ADDRESS;
-  }, [currentChainId]);
+  }, []);
 
   const isContractDeployed = Boolean(contractAddress && contractAddress !== ZERO_ADDRESS);
 
@@ -197,13 +198,14 @@ export function useUnlock() {
     setIsBusy(true);
     setError(null);
     try {
-      const hash = await walletClient.writeContract({
+      await assertActiveChain(walletClient);
+      const hash = await checkedWrite(walletClient, publicClient, {
         address: contractAddress,
         abi: unlockAbi,
         functionName: "list",
         args: [blobHash, keyHash, price, revealWindow, label],
       });
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      const receipt = await waitSuccess(publicClient, hash);
       const logs = parseEventLogs({
         abi: unlockAbi,
         eventName: "Listed",
@@ -227,14 +229,15 @@ export function useUnlock() {
     setIsBusy(true);
     setError(null);
     try {
-      const hash = await walletClient.writeContract({
+      await assertActiveChain(walletClient);
+      const hash = await checkedWrite(walletClient, publicClient, {
         address: contractAddress,
         abi: unlockAbi,
         functionName: "buy",
         args: [id],
         value: price,
       });
-      await publicClient.waitForTransactionReceipt({ hash });
+      await waitSuccess(publicClient, hash);
     } catch (err: unknown) {
       const msg = decodeContractError(err);
       setError(msg);
@@ -251,13 +254,14 @@ export function useUnlock() {
     setIsBusy(true);
     setError(null);
     try {
-      const hash = await walletClient.writeContract({
+      await assertActiveChain(walletClient);
+      const hash = await checkedWrite(walletClient, publicClient, {
         address: contractAddress,
         abi: unlockAbi,
         functionName: "reveal",
         args: [id, key],
       });
-      await publicClient.waitForTransactionReceipt({ hash });
+      await waitSuccess(publicClient, hash);
     } catch (err: unknown) {
       const msg = decodeContractError(err);
       setError(msg);
@@ -274,13 +278,14 @@ export function useUnlock() {
     setIsBusy(true);
     setError(null);
     try {
-      const hash = await walletClient.writeContract({
+      await assertActiveChain(walletClient);
+      const hash = await checkedWrite(walletClient, publicClient, {
         address: contractAddress,
         abi: unlockAbi,
         functionName: "refund",
         args: [id],
       });
-      await publicClient.waitForTransactionReceipt({ hash });
+      await waitSuccess(publicClient, hash);
     } catch (err: unknown) {
       const msg = decodeContractError(err);
       setError(msg);
@@ -297,13 +302,14 @@ export function useUnlock() {
     setIsBusy(true);
     setError(null);
     try {
-      const hash = await walletClient.writeContract({
+      await assertActiveChain(walletClient);
+      const hash = await checkedWrite(walletClient, publicClient, {
         address: contractAddress,
         abi: unlockAbi,
         functionName: "cancel",
         args: [id],
       });
-      await publicClient.waitForTransactionReceipt({ hash });
+      await waitSuccess(publicClient, hash);
     } catch (err: unknown) {
       const msg = decodeContractError(err);
       setError(msg);
@@ -320,12 +326,13 @@ export function useUnlock() {
     setIsBusy(true);
     setError(null);
     try {
-      const hash = await walletClient.writeContract({
+      await assertActiveChain(walletClient);
+      const hash = await checkedWrite(walletClient, publicClient, {
         address: contractAddress,
         abi: unlockAbi,
         functionName: "withdraw",
       });
-      await publicClient.waitForTransactionReceipt({ hash });
+      await waitSuccess(publicClient, hash);
     } catch (err: unknown) {
       const msg = decodeContractError(err);
       setError(msg);

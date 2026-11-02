@@ -5,8 +5,8 @@
 @source "../lib/**/*.{ts,tsx}";
 
 @theme {
-  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: var(--font-geist-mono), "SF Mono", Monaco, Inconsolata, "Fira Code", monospace;
+  --font-sans: var(--font-chivo), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-chivo-mono), ui-monospace, "SF Mono", Monaco, Inconsolata, monospace;
 
   --radius: 0px;
   --radius-sm: 0px;
